@@ -1,33 +1,55 @@
 import './styles.css';
 import imgCardTpl from './templates/imgCard.hbs';
-import imgListTpl from './templates/imgList.hbs';
-import onScroll from './js/onScroll';
-import onFetchError from './js/onError';
 import ImageApiService from './js/apiService';
 import getRefs from './js/getRefs';
 import { alert, defaultModules } from '@pnotify/core';
+import onClickImage from './js/onClickImage';
 const debounce = require('lodash.debounce');
 const imageApiService = new ImageApiService();
 const refs = getRefs();
+refs.cardContainer.addEventListener('click', onClickImage);
 refs.searchForm.addEventListener('submit', debounce(onSearch, 500));
-refs.buttonScroll.addEventListener('click', onScroll);
-
+refs.buttonScroll.addEventListener('click', onLoadMore);
+let refInput = document.querySelector('input');
 function onSearch(e) {
     e.preventDefault();
     clearResult();
-    imageApiService.searchQuery = e.currentTarget.elements.query.value;
+    imageApiService.searchQuery = refInput.value;
     imageApiService.resetPage();
-    console.log(imageApiService.searchQuery)
-    imageApiService.fetchImages()
+    if (imageApiService.searchQuery === '') {
+        return alert('Введить запит для пошуку')
+    }
+
+    imageApiService.fetchPictures()
         .then(renderImgCard)
         .catch(onFetchError);
 }
-function renderImgCard(img) {
-	 
-    const markup = imgCardTpl(img);
-    return refs.cardContainer.innerHTML('beforeend', markup); 
-  }
+function renderImgCard(hits) {
+    const markup = imgCardTpl(hits);
+    refs.cardContainer.insertAdjacentHTML('beforeend', markup); 
+}
     
 function clearResult() {
         refs.cardContainer.innerHTML = '';
 }
+
+function onLoadMore() {
+    imageApiService.fetchPictures().then(renderImgCard);
+    onScrollTo()     
+}
+
+function onFetchError() {
+    alert('Щось пішло не так! ')
+}
+
+function onScrollTo() {
+    let value = document.body.scrollHeight;
+     setTimeout(() => {
+      window.scrollTo({
+        top: value,
+        left: 0,
+        behavior: 'smooth',
+      });
+    }, 1000);
+}
+   

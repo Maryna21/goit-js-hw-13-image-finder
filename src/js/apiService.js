@@ -9,9 +9,9 @@ export default class ImageApiService {
 		const myApiKey = '19250465-3ecaba10f96f1a4c0424b71f3';
 		const url = `${BASE_URL}/?image_type=photo&orientation=horizontal&q=${this.searchQuery}&page=${this.page}&per_page=12&key=${myApiKey}`;
 		return fetch(url)
-			.then(response => response.json()).then((data) => {
+			.then(response => response.json()).then(({hits}) => {
 				this.incrementPage();
-				return data;
+				return hits;
 			}
 			)
 	}
@@ -23,6 +23,5 @@ export default class ImageApiService {
 		}
 	}
 
-console.log(ImageApiService);
 
 
